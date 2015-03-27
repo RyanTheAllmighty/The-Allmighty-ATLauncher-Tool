@@ -26,3 +26,15 @@ node_modules
 
 # Users Environment Variables
 .lock-wscript
+
+# IntelliJ
+.idea
+
+# Environment file
+.env
+
+# Working Dir
+working_dir
+
+# Ignore this
+bits.js
