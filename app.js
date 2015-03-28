@@ -16,41 +16,32 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-var env = require('node-env-file'),
-    fs = require('fs');
+'use strict';
 
-env(__dirname + '/.env');
-
-var api = require('atlauncher-api')(process.env.ATLAUNCHER_API_KEY, false, process.env.ATLAUNCHER_API_BASE_URL);
-
-var blank = function () {
-
-};
-
-var downloadFiles = function (path) {
-    var path = path || '';
-
-    api.admin.pack.files(process.env.PACK_SAFE_NAME, path, function (err, res) {
-        if (err) {
-            return console.error(err);
-        }
-
-        var files = res.data;
-
-        files.forEach(function (item) {
-            var file = process.env.PACK_DIR + 'files/' + (path == '' ? '' : path + '/') + item.filename;
-
-            if (!item.file) {
-                fs.mkdir(file + '/', function () {
-                    downloadFiles((path == '' ? item.filename : path + '/' + item.filename));
-                });
-            } else {
-                if (item.size && !fs.existsSync(file)) {
-                    api.admin.pack.file.download(process.env.PACK_SAFE_NAME, path, item.filename, file, blank);
-                }
+var functions = require('./functions.js'),
+    args = require("nomnom")
+        .option('action', {
+            position: 0,
+            required: true,
+            choices: ['download', 'packs', 'upload'],
+            help: 'The action to perform (download, packs, upload)'
+        })
+        .option('version', {
+            flag: true,
+            help: 'print version and exit',
+            callback: function () {
+                return "The Allmighty ATLauncher Tool v1.0.0\nUsing ATLauncher-API v1.0.3";
             }
-        });
-    });
-};
+        })
+        .parse();
 
-downloadFiles();
+switch (args.action) {
+    case 'download':
+        return functions.download();
+    case 'packs':
+        return functions.packs();
+    case 'upload':
+        return functions.upload();
+    default:
+        return console.error('Invalid action provided!');
+}
